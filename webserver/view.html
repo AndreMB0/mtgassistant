@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://www.gstatic.com/external_hosted/twitter_bootstrap_css/v4/bootstrap.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="boosters">
+      {{range $key, $value := .BoosterTextMap}}
+      <div class="booster">
+        <h3>Booster #{{$key}}</h3>
+        {{range $pos, $boo := $value}}
+        <div class="cards">
+          <pre class="single-card">{{$boo}}</pre>
+        </div>
+        {{end}}
+      </div>
+      {{end}}
+    </div>
+    <h3>Summary</h3>
+    <div class="summary">
+      <div class="summary-text form-group shadow-textarea">
+        <textarea class="form-control z-depth-1" id="summaryText" rows="20" cols="80">{{.SummaryText}}</textarea>
+        <button class="btn btn-primary btn-rounded copyto-clipboard" onclick="copySummaryToClipboard()">Copy cards to Clipboard</button>
+      </div>
+      <div class="summary-wildcards">
+        <pre>{{.WildcardText}}</pre>
+        <button class="btn btn-primary btn-rounded calcolate-wc" onclick="wildcardsPicker()">Calculate Wildcards</button>
+        <div id="wildcard-picker-area"><pre id="wildcard-picker-pre-area">{{.OnlyWCText}}</pre></div>
+        <script>
+          function wildcardsPicker() {
+            dataType: 'json'
+            var wcArea = document.getElementById("wildcard-picker-pre-area");
+            var sumArea = document.getElementById("summaryText");
+            var xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = function() {
+              if (xhr.readyState == 4 && xhr.status == 200) {
+                var jsonRes = JSON.parse(xhr.responseText)
+                wcArea.innerHTML = jsonRes.OnlyWCText
+                sumArea.innerHTML = jsonRes.SummaryText
+              }
+            }
+            xhr.open("GET", "/wildcardpicker", true);
+            try { xhr.send(); } catch (err) { console.log("Error sending the request from js"); }
+          }
+          function copySummaryToClipboard() {
+            var copyText = document.getElementById("summaryText");
+            copyText.select();
+            copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+            document.execCommand("copy");
+            alert("Copied cards to Clipboard: " + copyText.value);
+          }
+        </script>
+      </div>
+    </div>
+  </body>
+</html>
+

@@ -38,6 +38,7 @@ type cardDB struct {
 type CardJSON struct {
 	ID              uint64   `json:"grpid"`
 	TitleID         uint64   `json:"titleId"`
+	IsPrimaryCard   bool     `json:"isPrimaryCard"`
 	CollectorNumber string   `json:"CollectorNumber"`
 	Set             string   `json:"set"`
 	Rarity          uint64   `json:"rarity"`

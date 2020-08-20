@@ -1,17 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<title>MTG Arena Booster Tracker</title>
-</head>
+  <head>
+    <meta charset="UTF-8">
+    <title>MTG Arena Booster Tracker</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <link href="https://www.gstatic.com/external_hosted/twitter_bootstrap_css/v4/bootstrap.css" rel="stylesheet">
+  </head>
 
-<body>
-<form action="upload" method="post" enctype="multipart/form-data">
-<label for="mtgalog">Upload MTG Logs</label>
-<p>They are typically located in: <b>${USERPROFILE}\AppData\LocalLow\Wizards Of The Coast\MTGA\output_log.txt</b></p>
-<input type="file" id="mtgalog" name="mtgalogs">
-<input type="submit" value="Submit">
-</form>
-</body>
-
+  <body>
+    <div class="row h-100 align-items-center">
+    <div class="col-12 text-center">
+      <h1 class="font-weight-light">Booster Tracker</h1>
+      <h3>Retrivies content from log and calculates wildcards</h3>
+    </div>
+    <form class="commentForm" action="view" method="post" enctype="multipart/form-data">
+      <label for="mtgalog">Upload MTG Logs</label>
+      <p>They are typically located in: <b>${USERPROFILE}\AppData\LocalLow\Wizards Of The Coast\MTGA\player.txt</b></p>
+      <input class="form-control log-input" type="file" id="mtgalog" name="mtgalogs">
+      <input class="btn btn-primary btn-rounded tracking-submit" type="submit" value="Submit">
+    </form>
+    </div>
+  </body>
 </html>
+

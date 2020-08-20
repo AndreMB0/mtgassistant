@@ -1,0 +1,121 @@
+html {
+  min-height: 100%;
+}
+
+body {
+  background-attachment: scroll;
+  background-image: radial-gradient(rgb(42, 42, 42), rgb(8, 47, 78));
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: darkgray !important;
+  height: 100%;
+  padding: 50px;
+  text-align: center;
+}
+
+.commentForm {
+  margin-top: 60px;
+}
+
+.tracking-submit {
+  float: left;
+  margin: 2px 0px 0px 20px;
+}
+
+#content {
+  margin-left: auto;
+  margin-right: auto;
+  width: 650px;
+}
+
+.boosters {
+    display: flex;
+    flex-wrap: wrap;
+    /*justify-content: space-between;*/
+}
+
+.booster {
+    margin: 12px;
+    padding-right: 50px;
+}
+
+.cards {
+    overflow-y: auto;
+}
+
+.summary {
+    display: flex;
+}
+
+.summary-text textarea {
+    height: 400px;
+    width: 400px;
+}
+
+.summary-wildcards {
+    margin-left: 24px;
+}
+
+.shadow-textarea textarea.form-control::placeholder {
+    font-weight: 300;
+}
+.shadow-textarea textarea.form-control {
+    padding-left: 0.8rem;
+}
+
+.calcolate-wc {
+  margin-bottom: 20px;
+}
+
+.copyto-clipboard {
+  margin-top: 20px;
+}
+
+.log-input {
+  float: left;
+  width: auto !important;
+  height: 100% !important;
+  border-radius: 0.5rem !important;
+}
+
+pre {
+  color: darkgrey !important;
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 140px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -75px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #555 transparent transparent transparent;
+}
+
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+}
