@@ -13,8 +13,8 @@ body {
   text-align: center;
 }
 
-.commentForm {
-  margin-top: 60px;
+.tracking-form {
+  margin-top: 40px;
 }
 
 .tracking-submit {
@@ -71,11 +71,19 @@ body {
   margin-top: 20px;
 }
 
-.log-input {
+.log-input, .seed-text {
   float: left;
   width: auto !important;
   height: 100% !important;
   border-radius: 0.5rem !important;
+}
+
+.seed-text {
+  margin-top: 4px;
+}
+
+.second-block {
+  margin-top: 60px;
 }
 
 pre {
@@ -119,3 +127,4 @@ pre {
   visibility: visible;
   opacity: 1;
 }
+

@@ -11,7 +11,7 @@
     <div class="boosters">
       {{range $key, $value := .BoosterTextMap}}
       <div class="booster">
-        <h3>Booster #{{$key}}</h3>
+        <h3>Booster #{{add $key 1}}</h3>
         {{range $pos, $boo := $value}}
         <div class="cards">
           <pre class="single-card">{{$boo}}</pre>

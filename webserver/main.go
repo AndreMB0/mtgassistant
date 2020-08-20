@@ -5,13 +5,15 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"hash/fnv"
 	"html/template"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
+	"strconv"
 
-        "github.com/andremb0/mtgassistant/carddb"
+	"github.com/andremb0/mtgassistant/carddb"
 	"github.com/andremb0/mtgassistant/collectionfinder"
 )
 
@@ -22,11 +24,15 @@ var (
 	jsonFormat  = flag.Bool("json", false, "Whether or not to output booster info in JSON format.")
 )
 
-var templates = template.Must(template.ParseFiles("trackboosters.html", "view.html"))
+var templates = template.Must(template.New("").Funcs(template.FuncMap{"add": add}).ParseFiles("trackboosters.html", "view.html"))
 var boosterData []collectionfinder.BoosterContents
 var cardsByRarity = make(map[int][]uint64)
 
 const maxMtgaLogsSize int64 = 100 << 20 // 20 MiB
+const cardsNumberInBoosters int = 8
+const commonsInBoosters int = 5
+const uncommonsInBoosters int = 2
+const rareInBoosters int = 1
 
 // BoosterContents represent the contents of a MTG:Arena booster pack.
 type BoosterContents struct {
@@ -49,6 +55,16 @@ type Page struct {
 	OnlyWCText     string
 }
 
+func hash(s string) uint32 {
+	h := fnv.New32a()
+	h.Write([]byte(s))
+	return h.Sum32()
+}
+
+func add(x, y int) int {
+	return x + y
+}
+
 func loadPage(title string) (*Page, error) {
 	filename := title + ".html"
 	body, err := ioutil.ReadFile(filename)
@@ -64,6 +80,47 @@ func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func createNewBoosters(boostersQuantity int, seed string) (boosterData []collectionfinder.BoosterContents) {
+	var randomCard uint64
+	hashNum := int64(hash(seed))
+	boostersContent := make([]collectionfinder.BoosterContents, 0)
+	rand.Seed(hashNum)
+	db.ForEach(calculateCardsByRarity)
+	for i := 1; i <= boostersQuantity; i++ {
+		var booster collectionfinder.BoosterContents
+		var rmRarity = 4
+		for k := 1; k <= commonsInBoosters; k++ {
+			randomCard = uint64(rand.Int() % len(cardsByRarity[carddb.CommonRarity]))
+			cardID := cardsByRarity[carddb.CommonRarity][randomCard]
+			card := db.GetCardByID(cardID)
+			booster.CardIds = append(booster.CardIds, cardID)
+			log.Printf("calculating common: %d with random number %d and hashnum %d", cardID, randomCard, hashNum)
+			log.Printf("card %s", card.Name)
+		}
+		for k := 1; k <= uncommonsInBoosters; k++ {
+			randomCard = uint64(rand.Int() % len(cardsByRarity[carddb.UncommonRarity]))
+			cardID := cardsByRarity[carddb.UncommonRarity][randomCard]
+			card := db.GetCardByID(cardID)
+			booster.CardIds = append(booster.CardIds, cardID)
+			log.Printf("calculating uncommon: %d with random number %d and hashnum %d", cardID, randomCard, hashNum)
+			log.Printf("card %s", card.Name)
+		}
+		for k := 1; k <= rareInBoosters; k++ {
+			if rand.Int()%8 == 0 {
+				rmRarity = carddb.MythicRarity
+			}
+			randomCard = uint64(rand.Int() % len(cardsByRarity[rmRarity]))
+			cardID := cardsByRarity[rmRarity][randomCard]
+			card := db.GetCardByID(cardID)
+			booster.CardIds = append(booster.CardIds, cardID)
+			log.Printf("calculating rare: %d with random number %d and hashnum %d", cardID, randomCard, hashNum)
+			log.Printf("card %s", card.Name)
+		}
+		boostersContent = append(boostersContent, booster)
+	}
+	return boostersContent
 }
 
 func outputJSON(w http.ResponseWriter, boosterData []collectionfinder.BoosterContents) {
@@ -265,6 +322,39 @@ func uploadHandler(dc carddb.CardDB, jsonFormat bool) func(w http.ResponseWriter
 	}
 }
 
+func newBoostersHandler(dc carddb.CardDB, jsonFormat bool) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Add("Content-Type", "application/x-www-form-urlencoded")
+		err := r.ParseForm()
+		if err != nil {
+			log.Printf("could not parse multipart form: %v", err)
+			http.Error(w, "Invalid Request", http.StatusPreconditionFailed)
+		}
+
+		boostersQuantity, err := strconv.Atoi(r.FormValue("numberOfBoosters"))
+		if err != nil {
+			log.Printf("failed to parse numbers of boosters %s into integer", r.PostFormValue("numberOfBoosters"))
+			http.Error(w, "Could not retrieve mtg logs file", http.StatusPreconditionFailed)
+			return
+		}
+		seed := r.PostFormValue("seed")
+
+		boosterData = createNewBoosters(boostersQuantity, seed)
+
+		p, err := loadPage("view")
+		if err != nil {
+			http.Redirect(w, r, "/view", http.StatusFound)
+			return
+		}
+
+		if jsonFormat {
+			outputJSON(w, boosterData)
+		} else {
+			outputPlain(w, boosterData, p)
+		}
+	}
+}
+
 func boosterTracker(landingpagedata *Page) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Write(landingpagedata.Body)
@@ -288,6 +378,7 @@ func main() {
 	log.Println("Starting Server")
 	http.HandleFunc("/wildcardpicker", wcPickerHandler(db))
 	http.HandleFunc("/view", uploadHandler(db, *jsonFormat))
+	http.HandleFunc("/newboosters", newBoostersHandler(db, *jsonFormat))
 	http.HandleFunc("/trackboosters", boosterTracker(landingpagedata))
 	http.Handle("/", http.FileServer(http.Dir(".")))
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))

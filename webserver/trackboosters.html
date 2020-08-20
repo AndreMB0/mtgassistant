@@ -7,18 +7,35 @@
     <link href="https://www.gstatic.com/external_hosted/twitter_bootstrap_css/v4/bootstrap.css" rel="stylesheet">
   </head>
 
-  <body>
+  <body onload="getTimestamp()">
     <div class="row h-100 align-items-center">
-    <div class="col-12 text-center">
-      <h1 class="font-weight-light">Booster Tracker</h1>
-      <h3>Retrivies content from log and calculates wildcards</h3>
-    </div>
-    <form class="commentForm" action="view" method="post" enctype="multipart/form-data">
-      <label for="mtgalog">Upload MTG Logs</label>
-      <p>They are typically located in: <b>${USERPROFILE}\AppData\LocalLow\Wizards Of The Coast\MTGA\player.txt</b></p>
-      <input class="form-control log-input" type="file" id="mtgalog" name="mtgalogs">
-      <input class="btn btn-primary btn-rounded tracking-submit" type="submit" value="Submit">
-    </form>
+      <div class="col-12 text-center">
+        <h1 class="font-weight-light">Booster Tracker</h1>
+        <h3>Retrivies content from log and calculates wildcards</h3>
+      </div>
+      <form class="tracking-form" action="view" method="post" enctype="multipart/form-data">
+        <label for="mtgalog">Upload MTG Logs</label>
+        <p>They are typically located in: <b>${USERPROFILE}\AppData\LocalLow\Wizards Of The Coast\MTGA\player.txt</b></p>
+        <input class="form-control log-input" type="file" id="mtgalog" name="mtgalogs">
+        <input class="btn btn-primary btn-rounded tracking-submit" type="submit" value="Submit">
+      </form>
+      <div class="col-12 text-center second-block">
+        <h1 class="font-weight-light">Or Generate X new Boosters</h1>
+        <h5>If you already have a consistent MTGA *current set* collection, you may want to randomly generate Boosters</h5>
+        <form class="new-boosters-form" action="newboosters" method="post" enctype="application/x-www-form-urlencoded">
+          <input class="form-control seed-text" type="text" id="seed" name="seed">
+          <button name="numberOfBoosters" class="btn btn-primary btn-rounded tracking-submit" type="submit" value="2">2x Boosters</button>
+          <button name="numberOfBoosters" class="btn btn-primary btn-rounded tracking-submit" type="submit" value="10">10x Boosters</button>
+          <script>
+            var seedText = document.getElementById("seed");
+
+            function getTimestamp() {
+              seedText.value = Math.round(+new Date()/1000);
+              console.log(Math.round(+new Date()/1000));
+            }
+          </script>
+        </form>
+      </div>
     </div>
   </body>
 </html>
