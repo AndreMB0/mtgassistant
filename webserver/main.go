@@ -18,9 +18,9 @@ import (
 )
 
 var (
-	mtgDataPath = flag.String("mtg_data", `C:\Program Files (x86)\Wizards of the Coast\MTGA\MTGA_Data\Downloads\Data`, "Path to the Downloads\\Data folder inside the MTG Arena Install Directory")
+	mtgDataPath = flag.String("mtg_data", `C:\Program Files\Wizards of the Coast\MTGA\MTGA_Data\Downloads\Data`, "Path to the Downloads\\Data folder inside the MTG Arena Install Directory")
 	landingpage = flag.String("landing", "trackboosters", "Path to the landing page.")
-	mtgSet      = flag.String("set", "M21", "Current Set for wildcard picking.")
+	mtgSet      = flag.String("set", "ZNR", "Current Set for wildcard picking.")
 	jsonFormat  = flag.Bool("json", false, "Whether or not to output booster info in JSON format.")
 )
 
