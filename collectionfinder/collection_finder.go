@@ -13,6 +13,7 @@ import (
 const playerCollectionMessage string = "[UnityCrossThreadLogger]<== PlayerInventory.GetPlayerCardsV3"
 const playerInventoryMessage string = "[UnityCrossThreadLogger]<== PlayerInventory.GetPlayerInventory"
 const playerInventoryUpdatedMessage string = "[UnityCrossThreadLogger]<== Inventory.Updated"
+const playerVaultProgressMessage string = "[UnityCrossThreadLogger]<== PlayerInventory.CrackBoostersV3"
 
 // PlayerInventory represents the inventory of a player.
 type PlayerInventory struct {
@@ -33,6 +34,17 @@ type cardListMsg map[string]uint32
 type inventoryUpdateJSON struct {
 	Context string `json:"context"`
 	Updates []updatesMsg
+}
+
+type ProgressVaultJSON struct {
+        CardsOpened            []json.RawMessage `json:"cardsOpened"`
+        TotalVaultProgress     int             `json:"totalVaultProgress"`
+        WildCardTrackMoves     int             `json:"wildCardTrackMoves"`
+        WildCardTrackPosition  int             `json:"wildCardTrackPosition"`
+	WildCardTrackCommons   int             `json:"wildCardTrackCommons"`
+	WildCardTrackUnCommons int             `json:"wildCardTrackUnCommons"`
+	WildCardTrackRares     int             `json:"wildCardTrackRares"`
+	WildCardTrackMythics   int             `json:"wildCardTrackMythics"`
 }
 
 type updatesMsg struct {
@@ -60,27 +72,41 @@ type BoosterContents struct {
 	CardIds           []uint64
 }
 
+func FindProgress(mtgalogs io.Reader) ([]ProgressVaultJSON, error) {
+        var progressList []ProgressVaultJSON
+        vaultProgress, err := findMessages(mtgalogs, playerVaultProgressMessage)
+	if err != nil {
+		return nil, err
+	}
+	for _, progressRaw := range vaultProgress {
+	        var progress ProgressVaultJSON
+	        json.Unmarshal([]byte(progressRaw), &progress)
+	        progressList = append(progressList, progress)
+	}
+	return progressList, nil
+}
 // FindBoosters returns the list of all opened boosters in the MTG Arena Logs.
-func FindBoosters(mtgalogs io.Reader) ([]BoosterContents, error) {
+func FindBoosters(mtgalogs io.Reader, progressList []ProgressVaultJSON) ([]BoosterContents, error) {
 	inventoryUpdates, err := findMessages(mtgalogs, playerInventoryUpdatedMessage)
 	if err != nil {
 		return nil, err
 	}
-
+	
 	res := make([]BoosterContents, 0)
-	for _, updateRaw := range inventoryUpdates {
+	for i, updateRaw := range inventoryUpdates {
 		var update inventoryUpdateJSON
 		json.Unmarshal([]byte(updateRaw), &update)
 		if update.Context != "Booster.Open" {
 			continue
 		}
+		
 
 		var contents BoosterContents
 		for _, u := range update.Updates {
-			contents.CommonWildcards += u.Delta.WcCommonDelta
-			contents.UncommonWildcards += u.Delta.WcUncommonDelta
-			contents.RareWildcards += u.Delta.WcRareDelta
-			contents.MythicWildcards += u.Delta.WcMythicDelta
+			contents.CommonWildcards += u.Delta.WcCommonDelta - progressList[i-1].WildCardTrackCommons
+			contents.UncommonWildcards += u.Delta.WcUncommonDelta - progressList[i-1].WildCardTrackUnCommons
+			contents.RareWildcards += u.Delta.WcRareDelta - progressList[i-1].WildCardTrackRares
+			contents.MythicWildcards += u.Delta.WcMythicDelta - progressList[i-1].WildCardTrackMythics
 			for _, c := range u.AetherizedCards {
 				contents.CardIds = append(contents.CardIds, c.GrpID)
 			}
