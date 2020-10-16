@@ -12,6 +12,26 @@ the programs via command-line flags.
 # What can I do?
 Right now the assistant only has two binaries: a collection exporter, and a deck helper.
 
+## MTGA Assistant
+MTGA Assistant is a web application that parse your MTGA log and print the cards you have found in the latest boosters opening.
+It tracks the wildcard you found and can redeem your wildcards with a related valid card in the current set.
+
+How to use:
+- Download the release package
+- Using the Terminal or Command Prompt, go to the downloaded folder
+- Execute the following command (please use /usr/local/go/bin/go if you have problems finding the go command) :
+```
+$ go run main.go
+```
+- If you don't have the MTGA client Data folder (C:\Program Files\Wizards of the Coast\MTGA\MTGA_Data\Downloads\Data), you can use the flag --mtg_data for pointing to a directory containing the data files, example:
+```
+/usr/local/go/bin/go run main.go --mtg_data "../Data"
+```
+- You can always set a different Set for wildcard picking using the flag --set, example:
+```
+/usr/local/go/bin/go run main.go --set "IKO"
+```
+
 ## Collection Exporter
 Collection Exporter is a program that will parse your MTG:A collection and print it in the MTG:A format.
 To run it, just do:
