@@ -302,8 +302,22 @@ func uploadHandler(dc carddb.CardDB, jsonFormat bool) func(w http.ResponseWriter
 			http.Error(w, "Could not retrieve mtg logs file", http.StatusPreconditionFailed)
 			return
 		}
+		var progressData []collectionfinder.ProgressVaultJSON
 		defer file.Close()
-		boosterData, err = collectionfinder.FindBoosters(file)
+		progressData, err = collectionfinder.FindProgress(file)
+		if err != nil {
+			log.Fatalf("failed to parse mtga logs: %v", err)
+		}
+		log.Println("data: %s", progressData)
+
+		file, _, err = r.FormFile("mtgalogs")
+		if err != nil {
+			log.Printf("couldnt get uploaded file: %v", err)
+			http.Error(w, "Could not retrieve mtg logs file", http.StatusPreconditionFailed)
+			return
+		}
+		defer file.Close()
+		boosterData, err = collectionfinder.FindBoosters(file, progressData)
 		if err != nil {
 			log.Fatalf("failed to parse mtga logs: %v", err)
 		}
@@ -383,4 +397,3 @@ func main() {
 	http.Handle("/", http.FileServer(http.Dir(".")))
 	log.Fatal(http.ListenAndServe("127.0.0.1:8080", nil))
 }
-
